@@ -39,15 +39,13 @@ namespace EastViewAPI
             services.AddDbContext<Entities.DB>(opts => opts.UseSqlServer(Configuration["ConnectionString:DB"]));
             services.AddControllers();
 
-            // configure strongly typed settings object
             services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
 
-            // configure DI for application services
             services.AddScoped<IUserService, UserService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, Entities.DB db)
         {
             if (env.IsDevelopment())
             {
@@ -66,7 +64,12 @@ namespace EastViewAPI
 
             app.UseRouting();
 
-            app.UseAuthorization();
+            //app.UseAuthorization();
+            //use custom middleware
+            app.UseMiddleware<JwtMiddleware>();
+
+            //run migrations 
+            db.Database.Migrate();
 
             app.UseEndpoints(endpoints =>
             {
